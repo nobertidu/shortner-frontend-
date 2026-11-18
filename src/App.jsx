@@ -42,6 +42,7 @@ export default function App() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [apiUp, setApiUp] = useState(null);
+  const [keyRequired, setKeyRequired] = useState(true);
   const [copiedId, setCopiedId] = useState(null);
 
   const loadLinks = useCallback(async () => {
@@ -56,7 +57,11 @@ export default function App() {
 
   useEffect(() => {
     fetch(`${API}/health`)
-      .then((r) => setApiUp(r.ok))
+      .then(async (r) => {
+        setApiUp(r.ok);
+        const data = await r.json().catch(() => ({}));
+        if (data.keyRequired === false) setKeyRequired(false);
+      })
       .catch(() => setApiUp(false));
     loadLinks();
     // refresh every 10 seconds so click counts stay current
@@ -154,6 +159,7 @@ export default function App() {
               onChange={(e) => setCode(e.target.value)}
             />
           </label>
+          {keyRequired && (
           <label>
             admin key
             <input
@@ -163,6 +169,7 @@ export default function App() {
               onChange={(e) => saveKey(e.target.value)}
             />
           </label>
+          )}
         </div>
         {error && <p className="error">{error}</p>}
         <button disabled={loading || !url.trim()}>
